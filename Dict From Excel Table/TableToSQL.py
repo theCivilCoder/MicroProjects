@@ -22,40 +22,51 @@ def TableToSQL(path):
 
 
 	## Get Primary Keys for each of the unique entries in each column
-	idxCol = 0
-	while (idxCol < len(listCols)):
-		currentColName = listCols[idxCol]
-		currentCol = list(set(df[currentColName].to_list()))
-		currentCol.sort()
-		addPKsToDict(dictPrimaryKeys, currentCol, currentColName)
+	# idxCol = 0
+	# while (idxCol < len(listCols)):
+		
+	# 	# addPKsToDict(dictPrimaryKeys, currentCol, currentColName, idxCol)
+	# 	addPKsToDict(dictPrimaryKeys, df, idxCol)
 
-		idxCol += 1
-	# print(dictPrimaryKeys)
-	print("-"*150)
-	print("")
+
+	# 	idxCol += 1
+	# # print(dictPrimaryKeys)
+	# print("-"*150)
+	# print("")
+
+##-----------------------------------------------------------------------------------------
+	#single iteration with idxCol = 1
+
+	addPKsToDict(dictPrimaryKeys, df, 1)
+
+
+
+
+#--------------------------------------------------------------------------------------
+
 
 
 	## Create Excels for each column showing the layout of the equivalent SQL table
 	idxCol = 0
-	while (idxCol < len(listCols)):
-		# print(f"current idxCol = {idxCol}")
+	# while (idxCol < len(listCols)):
+	# 	# print(f"current idxCol = {idxCol}")
 
-		#get part of the dataframe up to the current column currently under consideration
-		dfPartial = df[df.columns.to_list()[:idxCol+1]]
+	# 	#get part of the dataframe up to the current column currently under consideration
+	# 	dfPartial = df[df.columns.to_list()[:idxCol+1]]
 		
-		#drop the duplicate rows
-		# print(f"size: {dfPartial.shape}")
-		dfPartial = dfPartial.drop_duplicates()
-		# print(f"size: {dfPartial.shape}")
+	# 	#drop the duplicate rows
+	# 	# print(f"size: {dfPartial.shape}")
+	# 	dfPartial = dfPartial.drop_duplicates()
+	# 	# print(f"size: {dfPartial.shape}")
 
-		dfPartial.index.names = ["Primary Key"]
+	# 	dfPartial.index.names = ["Primary Key"]
 
-		#call function to process the table and print out excel tables representative of the table saved on SQL software
-		printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys)
+	# 	#call function to process the table and print out excel tables representative of the table saved on SQL software
+	# 	printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys)
 
-		# print(dfPartial.head())
-		# print()
-		idxCol += 1 
+	# 	# print(dfPartial.head())
+	# 	# print()
+	# 	idxCol += 1 
 
 	# -------------------------------------------------
 	# # THIS IS FOR TESTING SINGLE ITERATION, CAN DELETE LATER 
@@ -93,20 +104,60 @@ addPKsToDict()
 
 	Updates the dictionary holding all the dictionaries for each column with a single dictionary for the current column under consideration
 """
-def addPKsToDict(dictPrimaryKeys, listUniqueNames, columnName):
+# def addPKsToDict(dictPrimaryKeys, listUniqueNames, columnName, idxCol):
+def addPKsToDict(dictPrimaryKeys, df, idxCol):
+	listCols = df.columns.to_list()
+	currentColName = listCols[idxCol]
+
+
+
 	#create the dictionary for this particular columnName with the corresponding primary key for each unique entry
 	dictOneColumn = {}
 
-	for (i, name) in enumerate(listUniqueNames):
-		dictOneColumn[name] = i+1
+	## First Column is a Strong Entity which would only have one to many relationship (no foreign keys present in this table)
+	if (idxCol == 0):
+		currentCol = list(set(df[currentColName].to_list()))
+		currentCol.sort()
+		for (i, name) in enumerate(currentCol):
+			dictOneColumn[name] = i+1
+
+	## Any other column can have a many to many relationship so Entries may not be unique
+	else:
+
+		dfPartial = df[df.columns.to_list()[:idxCol+1]]
+		dfPartial = dfPartial.drop_duplicates()
+		
+		#reorganize the dfPartial so that the latest column is on the left
+		dfPartial = dfPartial[[dfPartial.columns.to_list()[-1]]+dfPartial.columns.to_list()[:-1]]
+		dfPartial.sort_values([currentColName], inplace=True) 
+		dfPartial.index = np.arange(1, len(dfPartial) + 1)
+
+
+		row = 0 	
+		print(dfPartial.head())	
+		print(f"dfPartial.iloc[0, 0] = {dfPartial.iloc[0, 0]}")
+		while (row < df.size):
+			idxForeignKey = 1
+
+			while (idxForeignKey < len(dfPartial.columns.to_list())):
+
+				dictOneColumn
+
+
+			colEntry = dfPartial.iloc[]
+			row+=1 
+
+
 
 	#Update the dictionary with the primary keys for all the columns
-	dictPrimaryKeys[columnName] = dictOneColumn
+	dictPrimaryKeys[currentColName] = dictOneColumn
 
-	print(f"Column Name = {columnName}")
+	print(f"Current Column Name = {currentColName}")
 	print(dictOneColumn)
 	print()
 
+
+def nestedDictionary()
 
 
 def printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys):
