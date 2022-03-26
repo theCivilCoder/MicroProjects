@@ -1,0 +1,11 @@
+Sub ShowWeek1()
+'
+' ShowWeek1 Macro
+'
+    
+    Columns("E:L").Select
+    Selection.EntireColumn.Hidden = False
+    Range("E3").Select
+  
+
+End Sub
