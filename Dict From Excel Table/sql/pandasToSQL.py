@@ -4,15 +4,18 @@ def toSQL(df):
 	#list to hold the text that populates the SQL script
 	listSQL = []
 
-	# df = df.iloc[:10, :]
+	listCols = df.columns.to_list()
+
+
+	#use the default index beginning with 0
+	df = df.reset_index()
 	print(df.head())
 
-	listCols = df.columns.to_list()
 
 	primaryKey = 1
 
 	firstLine = f"INSERT INTO {listCols[0]} (id, "
-	for col in listCols[1:]:
+	for col in listCols:
 		firstLine += f"{col.replace(' ','_')}, "
 	firstLine = firstLine[:-2] +")"
 	listSQL.append(firstLine)
@@ -20,12 +23,16 @@ def toSQL(df):
 
 
 	while (primaryKey <= len(df)):
-		singleEntry = f"('{primaryKey}', "
+		singleEntry = f"({primaryKey}, "
 		# for idx, col in enumerate(listCols[1:]):
 		for col in listCols:
-			# value = df.iloc[primaryKey-1, idx+1]
 			value = df.loc[primaryKey-1, col]
-			singleEntry += f"'{value.title()}', "
+			print(f"value = {value}")
+			if (type(value) == str):
+				value = value.title()
+				singleEntry += f"'{value}', "
+			else:
+				singleEntry += f"{value}, "
 
 		singleEntry = singleEntry[:-2]+"),"
 		listSQL.append(singleEntry)
@@ -36,7 +43,11 @@ def toSQL(df):
 	#replace last comma in the last line with a semicolon
 	listSQL[-1] = listSQL[-1][:-1]+";"
 
-	for line in listSQL:
-		print(line)
+
+	with open(f"./sql/{listCols[0]} SQL.txt", "w") as f:
+		for line in listSQL:
+			print(line)
+			f.write(line+"\n")
+
 
 		

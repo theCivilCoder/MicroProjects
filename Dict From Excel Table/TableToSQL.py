@@ -23,47 +23,50 @@ def TableToSQL(path):
 
 
 	# Get Primary Keys for each of the unique entries in each column
+	# For each column after the first column, add the respective foreign keys
 	idxCol = 0
 	prevDF = None
 	while (idxCol < len(listCols)):
-		
-		# addPKsToDict(dictPrimaryKeys, currentCol, currentColName, idxCol)
-		prevDF = addPKsToDict(dictPrimaryKeys, df, idxCol, prevDF)
-
-
+		prevDF = prepDF(df, idxCol, prevDF)
 		idxCol += 1
-	# print(dictPrimaryKeys)
 	print("-"*150)
 	print("")
 
 
 """
-addPKsToDict()
+prepDF()
 	@Inputs:
-		dictPrimaryKyes (DEPRACATED) = dictionary holding dictionaries for each column where the sub-level dictionary holds (key,value) pairs of (unique entry, primary key integer)
-		listUniqueNames = list of the unique entries in one column
-		columName = name of the column under consideration (column from excel table)
-	@Output: None
+		df = entire dataframe
+		idxCol = index of the column from the excel table which is currently under consideration
+		prevDF = the partial dataframe from the previous iteration (this is the corresponding table which the current column will have a foreign key to)
+	@Output: 
+		dfPartial = the partial dataframe for the current column column under consideration (this will become the prevDF for the next column)
 
 	Updates the dictionary holding all the dictionaries for each column with a single dictionary for the current column under consideration
 """
-def addPKsToDict(dictPrimaryKeys, df, idxCol, prevDF):
+def prepDF(df, idxCol, prevDF):
 	listCols = df.columns.to_list()
 	currentColName = listCols[idxCol]
 
+	#create the partial dataframe holding the dataframe corresponding to the current column under consideration
 	dfPartial = df[df.columns.to_list()[:idxCol+1]]
+
+	#drop the duplicate rows
 	dfPartial = dfPartial.drop_duplicates()
 
 	#reorganize the dfPartial so that the latest column is on the left
 	dfPartial = dfPartial[[dfPartial.columns.to_list()[-1]]+dfPartial.columns.to_list()[:-1]]
+	
+	#sort all rows by the current column under consideration
 	dfPartial.sort_values([currentColName], inplace=True) 
+
 	dfPartial.index = np.arange(1, len(dfPartial) + 1)
 	dfPartial.index.names = ["Primary Key"]
 	# print("dfPartial passed into printTableWithForeignKeys()")
 	# print(dfPartial.head())
 
-
-	printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys, prevDF)
+	#Add the Foreign Keys
+	printTableWithForeignKeys(idxCol, dfPartial, prevDF)
 
 	return dfPartial
 
@@ -75,6 +78,8 @@ def addPKsToDict(dictPrimaryKeys, df, idxCol, prevDF):
 """
 printTableWithForeignKeys()
 	@Input:
+		idxCol = index of the column from the excel table which is currently under consideration
+		prevDF = the partial dataframe from the previous iteration (this is the corresponding table which the current column will have a foreign key to)
 		dfPartial = partial dataframe up to the column corresponding to idxCol of the original excel table
 					partial dataframe is already reorganized so that the column under consideration is the left most column
 					partial dataframe already has duplicates dropped and a primary key index starting at 1 was implemented
@@ -82,12 +87,12 @@ printTableWithForeignKeys()
 	This is set up to get the foreign key from previous columns.
 	It is assumed each right most column is dependent on all of the columns left of the right-most column
 """
-def printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys, prevDF):
-	print(f"current idxCol = {idxCol}")
+def printTableWithForeignKeys(idxCol, dfPartial, prevDF):
 	listCols = dfPartial.columns.to_list()
 	listColsFK = listCols[1:]
 	# print(listColsFK)
 	currentColName = listCols[0].replace(" ","_")
+	print(f"current idxCol = {idxCol}, current column name = {currentColName}")
 
 	#list holds lists of the foreign keys 
 	listForeignKeys = []
@@ -127,7 +132,24 @@ def printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys, prevDF):
 		dfPartial[f"{listColsFK[-1]}_ForeignKey"] = listForeignKeys
 
 
+		#Remove the original foreign key column(s)
+		listCols = dfPartial.columns.to_list()
+		numColsFK = len(listColsFK)
+		# print(f"numColsFK = {numColsFK}")
+		# print("listCols before removal: ")
+		# print(listCols)
+		colsToKeep = [listCols[0]] + [listCols[numColsFK+1]]
+		# print("listCols after removal: ")
+		# print(colsToKeep)
+
+		dfPartial = dfPartial[colsToKeep]
+
 	dfPartial.to_excel(f"Col{idxCol +1} - {currentColName}.xlsx")
+
+	# generate the sql script for inserting the data to a sql table
+	toolSQL.toSQL(dfPartial)
+
+
 
 def main():
 	path = r"D:\Coding\100. Projects\1. MicoProjects\Dict From Excel Table\Data.xlsx"
