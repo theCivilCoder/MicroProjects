@@ -1,4 +1,5 @@
 import pandas as pd, numpy as np 
+import sql.pandasToSQL as toolSQL
 
 """
 TableToSQL()
@@ -21,176 +22,109 @@ def TableToSQL(path):
 	print("")
 
 
-	## Get Primary Keys for each of the unique entries in each column
-	# idxCol = 0
-	# while (idxCol < len(listCols)):
-		
-	# 	# addPKsToDict(dictPrimaryKeys, currentCol, currentColName, idxCol)
-	# 	addPKsToDict(dictPrimaryKeys, df, idxCol)
-
-
-	# 	idxCol += 1
-	# # print(dictPrimaryKeys)
-	# print("-"*150)
-	# print("")
-
-##-----------------------------------------------------------------------------------------
-	#single iteration with idxCol = 1
-
-	addPKsToDict(dictPrimaryKeys, df, 1)
-
-
-
-
-#--------------------------------------------------------------------------------------
-
-
-
-	## Create Excels for each column showing the layout of the equivalent SQL table
+	# Get Primary Keys for each of the unique entries in each column
 	idxCol = 0
-	# while (idxCol < len(listCols)):
-	# 	# print(f"current idxCol = {idxCol}")
-
-	# 	#get part of the dataframe up to the current column currently under consideration
-	# 	dfPartial = df[df.columns.to_list()[:idxCol+1]]
+	prevDF = None
+	while (idxCol < len(listCols)):
 		
-	# 	#drop the duplicate rows
-	# 	# print(f"size: {dfPartial.shape}")
-	# 	dfPartial = dfPartial.drop_duplicates()
-	# 	# print(f"size: {dfPartial.shape}")
-
-	# 	dfPartial.index.names = ["Primary Key"]
-
-	# 	#call function to process the table and print out excel tables representative of the table saved on SQL software
-	# 	printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys)
-
-	# 	# print(dfPartial.head())
-	# 	# print()
-	# 	idxCol += 1 
-
-	# -------------------------------------------------
-	# # THIS IS FOR TESTING SINGLE ITERATION, CAN DELETE LATER 
-
-	# #get part of the dataframe up to the current column currently under consideration
-	# idxCol = 1
-	# dfPartial = df[df.columns.to_list()[:idxCol+1]]
-	
-	# #drop the duplicate rows
-	# # print(f"size: {dfPartial.shape}")
-	# dfPartial = dfPartial.drop_duplicates()
-	# # print(f"size: {dfPartial.shape}")
-
-	# #update the index to being at 1
-	# dfPartial.index = np.arange(1, len(dfPartial) + 1)
-	# dfPartial.index.names = ["Primary Key"]
-
-	# #call function to process the table and print out excel tables representative of the table saved on SQL software
-	# printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys)
-
-	# # print(dfPartial.head())
-	# # print()
+		# addPKsToDict(dictPrimaryKeys, currentCol, currentColName, idxCol)
+		prevDF = addPKsToDict(dictPrimaryKeys, df, idxCol, prevDF)
 
 
-
+		idxCol += 1
+	# print(dictPrimaryKeys)
+	print("-"*150)
+	print("")
 
 
 """
 addPKsToDict()
 	@Inputs:
-		dictPrimaryKyes = dictionary holding dictionaries for each column where the sub-level dictionary holds (key,value) pairs of (unique entry, primary key integer)
+		dictPrimaryKyes (DEPRACATED) = dictionary holding dictionaries for each column where the sub-level dictionary holds (key,value) pairs of (unique entry, primary key integer)
 		listUniqueNames = list of the unique entries in one column
 		columName = name of the column under consideration (column from excel table)
 	@Output: None
 
 	Updates the dictionary holding all the dictionaries for each column with a single dictionary for the current column under consideration
 """
-# def addPKsToDict(dictPrimaryKeys, listUniqueNames, columnName, idxCol):
-def addPKsToDict(dictPrimaryKeys, df, idxCol):
+def addPKsToDict(dictPrimaryKeys, df, idxCol, prevDF):
 	listCols = df.columns.to_list()
 	currentColName = listCols[idxCol]
 
+	dfPartial = df[df.columns.to_list()[:idxCol+1]]
+	dfPartial = dfPartial.drop_duplicates()
 
-
-	#create the dictionary for this particular columnName with the corresponding primary key for each unique entry
-	dictOneColumn = {}
-
-	## First Column is a Strong Entity which would only have one to many relationship (no foreign keys present in this table)
-	if (idxCol == 0):
-		currentCol = list(set(df[currentColName].to_list()))
-		currentCol.sort()
-		for (i, name) in enumerate(currentCol):
-			dictOneColumn[name] = i+1
-
-	## Any other column can have a many to many relationship so Entries may not be unique
-	else:
-
-		dfPartial = df[df.columns.to_list()[:idxCol+1]]
-		dfPartial = dfPartial.drop_duplicates()
-		
-		#reorganize the dfPartial so that the latest column is on the left
-		dfPartial = dfPartial[[dfPartial.columns.to_list()[-1]]+dfPartial.columns.to_list()[:-1]]
-		dfPartial.sort_values([currentColName], inplace=True) 
-		dfPartial.index = np.arange(1, len(dfPartial) + 1)
-
-
-		row = 0 	
-		print(dfPartial.head())	
-		print(f"dfPartial.iloc[0, 0] = {dfPartial.iloc[0, 0]}")
-		while (row < df.size):
-			idxForeignKey = 1
-
-			while (idxForeignKey < len(dfPartial.columns.to_list())):
-
-				dictOneColumn
-
-
-			colEntry = dfPartial.iloc[]
-			row+=1 
-
-
-
-	#Update the dictionary with the primary keys for all the columns
-	dictPrimaryKeys[currentColName] = dictOneColumn
-
-	print(f"Current Column Name = {currentColName}")
-	print(dictOneColumn)
-	print()
-
-
-def nestedDictionary()
-
-
-def printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys):
-	print(f"current idxCol = {idxCol}")
-	currentColName = dfPartial.columns.to_list()[-1].replace(" ","_")
-
-	#reorganize the dfPartial so that the latest column is on the left beside the primary key
+	#reorganize the dfPartial so that the latest column is on the left
 	dfPartial = dfPartial[[dfPartial.columns.to_list()[-1]]+dfPartial.columns.to_list()[:-1]]
-
-	#sort the table by the current column under consideration
-	dfPartial.sort_values([currentColName.replace("_"," ")], inplace=True) 
-
-	#update the index to being at 1
+	dfPartial.sort_values([currentColName], inplace=True) 
 	dfPartial.index = np.arange(1, len(dfPartial) + 1)
+	dfPartial.index.names = ["Primary Key"]
+	# print("dfPartial passed into printTableWithForeignKeys()")
+	# print(dfPartial.head())
 
 
-	#add in the corresponding foreign keys for each column right of the latest column 
-	listForeignKeyColumns = dfPartial.columns.to_list()[1:]
-	# print(listForeignKeyColumns)
-	for foreignKeyColumnName in listForeignKeyColumns:
-		currentCol = dfPartial[foreignKeyColumnName].to_list()
-		dictCurrentCol = dictPrimaryKeys[foreignKeyColumnName]
+	printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys, prevDF)
 
-		#define the list of foreign keys
-		listForeignKeys = [dictCurrentCol[foreignEntity] for foreignEntity in currentCol]
-
-		#Add the foreign keys column to the dataframe
-		dfPartial[f"{foreignKeyColumnName}_ForeignKey"] = listForeignKeys
+	return dfPartial
 
 
-	print(dfPartial.head())
-	print()
 
+
+
+
+"""
+printTableWithForeignKeys()
+	@Input:
+		dfPartial = partial dataframe up to the column corresponding to idxCol of the original excel table
+					partial dataframe is already reorganized so that the column under consideration is the left most column
+					partial dataframe already has duplicates dropped and a primary key index starting at 1 was implemented
+
+	This is set up to get the foreign key from previous columns.
+	It is assumed each right most column is dependent on all of the columns left of the right-most column
+"""
+def printTableWithForeignKeys(idxCol, dfPartial, dictPrimaryKeys, prevDF):
+	print(f"current idxCol = {idxCol}")
+	listCols = dfPartial.columns.to_list()
+	listColsFK = listCols[1:]
+	# print(listColsFK)
+	currentColName = listCols[0].replace(" ","_")
+
+	#list holds lists of the foreign keys 
+	listForeignKeys = []
+
+	## first column will be a SQL table with no foreign keys
+	if (idxCol > 0):
+
+		#go one row at a time and identify all necessary foreign keys 
+		row = 0
+		# print(f"dfPartial.size = {dfPartial.size}")
+		# print(f"dfPartial.shape = {dfPartial.shape}")
+		while (row < dfPartial.shape[0]):
+		# while (row < 5):
+
+			currentEntry = dfPartial.iloc[row, 0]
+			upperEntityColName = listColsFK[-1]
+
+			#filter the previous dataframe until a single row corresponding to the appropriate foreign key is found
+			filteredDF = prevDF.copy().reset_index()
+
+			#iteratively filter the df with each foreign key column (from one foreign key column)
+			for foreignKeyColumnName in listColsFK:
+				idxFKCol = dfPartial.columns.to_list().index(foreignKeyColumnName)
+				currentFilter = dfPartial.iloc[row, idxFKCol]
+				filteredDF = filteredDF[filteredDF[foreignKeyColumnName] == currentFilter]
+
+			#After filtering, only one row should exist
+			idxPKCol = filteredDF.columns.to_list().index("Primary Key")
+			foreignKey = filteredDF.iloc[0, idxPKCol]
+			# print(f"for row= {row}, foreignKey = {foreignKey}")
+			listForeignKeys.append(foreignKey)
+
+			row+= 1
+
+
+		#Add in the foreign keys
+		dfPartial[f"{listColsFK[-1]}_ForeignKey"] = listForeignKeys
 
 
 	dfPartial.to_excel(f"Col{idxCol +1} - {currentColName}.xlsx")
