@@ -152,7 +152,7 @@ def printTableWithForeignKeys(idxCol, dfPartial, prevDF):
 
 
 def main():
-	path = r"D:\Coding\100. Projects\1. MicoProjects\Dict From Excel Table\Data.xlsx"
+	path = r"D:\Coding\100. Projects\1. MicoProjects\Excel Table to SQL\Data.xlsx"
 	TableToSQL(path)
 
 main() 
