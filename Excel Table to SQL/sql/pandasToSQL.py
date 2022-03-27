@@ -1,15 +1,20 @@
-def toSQL(df):
+def toSQL(dfInput):
+	df = dfInput.copy()
 	print("inside of DfToSQL.py")
+	print(f"df.shape = {df.shape}")
 
 	#list to hold the text that populates the SQL script
 	listSQL = []
 
 	listCols = df.columns.to_list()
 
+	df[listCols[0]] = [value.title() for value in df[listCols[0]].to_list()]
+	df.sort_values([listCols[0]], inplace=True) 
+
 
 	#use the default index beginning with 0
 	df = df.reset_index()
-	print(df.head())
+	# print(df.head())
 
 
 	primaryKey = 1
@@ -27,7 +32,7 @@ def toSQL(df):
 		# for idx, col in enumerate(listCols[1:]):
 		for col in listCols:
 			value = df.loc[primaryKey-1, col]
-			print(f"value = {value}")
+			# print(f"value = {value}")
 			if (type(value) == str):
 				value = value.title()
 				singleEntry += f"'{value}', "
@@ -46,7 +51,7 @@ def toSQL(df):
 
 	with open(f"./sql/{listCols[0]} SQL.txt", "w") as f:
 		for line in listSQL:
-			print(line)
+			# print(line)
 			f.write(line+"\n")
 
 

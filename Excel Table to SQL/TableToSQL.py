@@ -29,7 +29,7 @@ def TableToSQL(path):
 	while (idxCol < len(listCols)):
 		prevDF = prepDF(df, idxCol, prevDF)
 		idxCol += 1
-	print("-"*150)
+		print("-"*150)
 	print("")
 
 
@@ -47,6 +47,8 @@ prepDF()
 def prepDF(df, idxCol, prevDF):
 	listCols = df.columns.to_list()
 	currentColName = listCols[idxCol]
+	# print()
+	# print(f"idxCol = {idxCol}, currentColName = {currentColName} **Jimmy**")
 
 	#create the partial dataframe holding the dataframe corresponding to the current column under consideration
 	dfPartial = df[df.columns.to_list()[:idxCol+1]]
@@ -62,16 +64,11 @@ def prepDF(df, idxCol, prevDF):
 
 	dfPartial.index = np.arange(1, len(dfPartial) + 1)
 	dfPartial.index.names = ["Primary Key"]
-	# print("dfPartial passed into printTableWithForeignKeys()")
-	# print(dfPartial.head())
 
 	#Add the Foreign Keys
 	printTableWithForeignKeys(idxCol, dfPartial, prevDF)
 
 	return dfPartial
-
-
-
 
 
 
@@ -94,6 +91,7 @@ def printTableWithForeignKeys(idxCol, dfPartial, prevDF):
 	currentColName = listCols[0].replace(" ","_")
 	print(f"current idxCol = {idxCol}, current column name = {currentColName}")
 
+
 	#list holds lists of the foreign keys 
 	listForeignKeys = []
 
@@ -105,19 +103,26 @@ def printTableWithForeignKeys(idxCol, dfPartial, prevDF):
 		# print(f"dfPartial.size = {dfPartial.size}")
 		# print(f"dfPartial.shape = {dfPartial.shape}")
 		while (row < dfPartial.shape[0]):
-		# while (row < 5):
 
 			currentEntry = dfPartial.iloc[row, 0]
 			upperEntityColName = listColsFK[-1]
 
 			#filter the previous dataframe until a single row corresponding to the appropriate foreign key is found
 			filteredDF = prevDF.copy().reset_index()
+			# print("filteredDF before filtering")
+			# print(filteredDF.shape)
+			# print(filteredDF.head())
 
 			#iteratively filter the df with each foreign key column (from one foreign key column)
 			for foreignKeyColumnName in listColsFK:
 				idxFKCol = dfPartial.columns.to_list().index(foreignKeyColumnName)
 				currentFilter = dfPartial.iloc[row, idxFKCol]
+				# print(f"currentFilter = {currentFilter}")
 				filteredDF = filteredDF[filteredDF[foreignKeyColumnName] == currentFilter]
+
+			# print("filteredDF after filtering")
+			# print(filteredDF.shape)
+			# print(filteredDF.head())
 
 			#After filtering, only one row should exist
 			idxPKCol = filteredDF.columns.to_list().index("Primary Key")
@@ -147,6 +152,7 @@ def printTableWithForeignKeys(idxCol, dfPartial, prevDF):
 	dfPartial.to_excel(f"Col{idxCol +1} - {currentColName}.xlsx")
 
 	# generate the sql script for inserting the data to a sql table
+	print()
 	toolSQL.toSQL(dfPartial)
 
 
