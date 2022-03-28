@@ -14,7 +14,8 @@ TableToSQL()
 def TableToSQL(path):
 	dictPrimaryKeys = {}
 	df = pd.read_excel(path)
-	# print(df.head())
+	dfToTitleStr(df)
+	print(df.head())
 
 	listCols = df.columns.to_list()
 	print("Names of the Columns found in this Excel:")
@@ -31,6 +32,28 @@ def TableToSQL(path):
 		idxCol += 1
 		print("-"*150)
 	print("")
+
+
+"""
+	update the pandas dataframe so that all the strings are styled as titles.
+	All strings have words where only the first letter of each word is capitalized
+"""
+def dfToTitleStr(df):
+	listCols = df.columns.to_list()
+	print("dfToTitleStr() -> ")
+	print(f"listCols = {listCols}")
+	for col in listCols:
+		updatedList = []
+
+		for value in df[col].to_list():
+			if (type(value) == str):
+				value = value.title()
+			updatedList.append(value)
+
+		df[col] = updatedList
+
+
+
 
 
 """

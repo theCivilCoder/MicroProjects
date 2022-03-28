@@ -8,7 +8,7 @@ def toSQL(dfInput):
 
 	listCols = df.columns.to_list()
 
-	df[listCols[0]] = [value.title() for value in df[listCols[0]].to_list()]
+	# df[listCols[0]] = [value.title() for value in df[listCols[0]].to_list()]
 	df.sort_values([listCols[0]], inplace=True) 
 
 
