@@ -1,0 +1,8 @@
+INSERT INTO Price (id, Price, Type_ForeignKey)
+VALUES
+(1, 1, 2),
+(2, 1, 6),
+(3, 2, 3),
+(4, 3, 5),
+(5, 4, 4),
+(6, 5, 1);

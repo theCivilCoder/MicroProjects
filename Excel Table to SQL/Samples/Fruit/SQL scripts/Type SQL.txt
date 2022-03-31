@@ -1,0 +1,8 @@
+INSERT INTO Type (id, Type, Color_ForeignKey)
+VALUES
+(1, 'Black Diamond', 4),
+(2, 'Fuji', 5),
+(3, 'Grany Smith', 2),
+(4, 'Hardy', 3),
+(5, 'Highbush', 1),
+(6, 'Honeycrisp', 5);
